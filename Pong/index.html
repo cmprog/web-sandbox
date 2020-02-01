@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <base href="pong" />
+        <link rel="stylesheet" type="text/css" href="site.css" />
+    </head>
+    <body>
+        <div class="paddle enemy"></div>
+        <div class="paddle player"></div>
+        <div class="ball"></div>
+        <script type="module">
+            import { PongGame } from '../scripts/Pong/PongGame.js';
+            new PongGame().run();
+        </script>
+    </body>
+</html>

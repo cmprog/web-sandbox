@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <base href="out" />
+        <link rel="stylesheet" type="text/css" href="beez.css" />
+    </head>
+    <body>
+
+        <div class="actions">            
+        </div>
+
+        <div class="area hive">
+            <span>Hive</span>
+            <div class="supers"></div>
+            <div class="field foragers">Foragers<span class="value"></span></div>
+            <div class="field workers">Workers<span class="value"></span></div>
+            <div class="field bee-capacity">Living Space<span class="value"></span></div>
+            <button class='add-super'>Add</button>
+        </div>
+
+        <div class="area honey-house">
+            <span>Honey House</span>            
+            <div class="field bottle-bear">Bears<span class="empty"></span><span class="filled"></span></div>
+            <div class="field bottle-pint">Pints<span class="empty"></span><span class="filled"></span></div>
+            <div class="field bottle-quart">Quarts<span class="empty"></span><span class="filled"></span></div>
+            <div class="supers"></div>
+        </div>
+
+        <div class="area bee-keeper">
+            <span>Bee Keeper</span>
+            <div class="supers"></div>
+        </div>
+
+        <div class="area extractor">
+            <span>Extractor</span>
+            <div class="supers"></div>
+            <button class="extract" title="Extract honey and place in bottling tank.">X</button>
+        </div>
+
+        <div class="area bottling-tank">
+            <span>Bottling Tank</span>            
+            <div class="field honey">Honey<span class="value"></span></div>
+            <div class="container"></div>
+            <button class="fill" title="Fill the current container.">F</button>
+        </div>
+
+        <div id="diagnostics">
+            <div class="field time-total">Total Time<span class="value"></span></div>
+            <div class="field tick-time">Tick Time<span class="value"></span></div>
+            <div class="field tick-count">Tick Count<span class="value"></span></div>
+        </div>
+
+        <div id="templates">
+            
+            <div class="hive-super">
+                <div class="field pollen">Pollen<span class="value"></div>
+                <div class="field honey">Honey<span class="value"></div>
+                <div class="resource-container">
+                    <span class="dual-progress"></span>
+                    <span class="field resource-capacity" title="Total capacity"><span class="value"></span></span>
+                </div>
+                <button class="collect" title="Collect Honey">C</button>
+            </div>
+            
+            <div class="keeper-super">
+                <div class="field honey">Honey<span class="value"></div>
+                <button class="store" title="Store the super in the honey house.">S</button>
+                <button class="load" title="Load the super into the extractor.">L</button>
+            </div>
+
+            <div class="house-super">
+                <div class="field honey">Honey<span class="value"></div>
+                <button class="load" title="Load the super into the extractor.">L</button>
+            </div>
+
+            <div class="extractor-super">
+                <div class="field honey">Honey<span class="value"></div>
+            </div>
+
+            <div class="timed-action">
+                <div class="progress"></div>
+                <button class="cancel" title="Cancel this action.">X</button>
+            </div>
+
+            <div class="tank-container">
+                <div class="field capacity">Capacity<span class="value"></span></div>
+            </div>
+
+        </div>
+
+        <script type="module">
+            import { BeeGame } from './Beez/Game.js';
+            new BeeGame().run();
+        </script>
+    </body>
+</html>

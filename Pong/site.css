@@ -1,0 +1,30 @@
+body {
+    padding: 0;
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    overflow: hidden;
+}
+
+.ball, .paddle {
+    background-color: green;
+    position: absolute;
+}
+
+.paddle.player {
+    background-color: blue;
+}
+
+.paddle {
+    width: 10px;
+    height: 100px;
+}
+
+.ball {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    border: 1px solid green;
+}
+
