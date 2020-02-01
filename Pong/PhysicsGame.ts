@@ -11,6 +11,10 @@ export class PhysicsGame extends Game implements Updatable {
     private readonly _entitiesPendingRemove = new Array<Entity>();
 
     private static _instance: PhysicsGame;
+
+    static get instance(): PhysicsGame {
+        return PhysicsGame._instance;
+    }
     
     constructor() {
         super();
@@ -33,6 +37,15 @@ export class PhysicsGame extends Game implements Updatable {
 
     static removeEntity(entity: Entity): void {
         PhysicsGame._instance._entitiesPendingRemove.push(entity);
+    }
+    
+    findEntity(tag: string): Entity {
+        for (let i = 0; i < this._entities.length; i++) {
+            const entity = this._entities[i];
+            if (entity.tag == tag) return entity;
+        }
+
+        return null;
     }
 
     /**

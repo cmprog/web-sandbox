@@ -15,11 +15,22 @@ export class PhysicsGame extends Game {
         Input.initialize();
         Viewport.initialize();
     }
+    static get instance() {
+        return PhysicsGame._instance;
+    }
     static addEntity(entity) {
         PhysicsGame._instance._entitiesPendingAdd.push(entity);
     }
     static removeEntity(entity) {
         PhysicsGame._instance._entitiesPendingRemove.push(entity);
+    }
+    findEntity(tag) {
+        for (let i = 0; i < this._entities.length; i++) {
+            const entity = this._entities[i];
+            if (entity.tag == tag)
+                return entity;
+        }
+        return null;
     }
     /**
      * Sends a message to all components for all entities.

@@ -1,6 +1,7 @@
-import { RigidBody } from "./Entity.js";
+import { Entity, RigidBody } from "./Entity.js";
 import { Component } from "./Component.js";
 import { Viewport, Input } from "./Input.js";
+import { HtmlElementTextUI } from "./Renderer.js";
 export class BallMovementBehavior extends Component {
     constructor() {
         super();
@@ -32,38 +33,19 @@ export class BallMovementBehavior extends Component {
         this._body.velocity.x = -this._body.velocity.x;
     }
 }
-export class EnemyPaddleBahavior extends Component {
-    start() {
-        this.entity.position.y = 0;
-        this.onViewportSizeChanged();
-    }
-    update() {
-        if (!this.ball)
-            return;
-        // perfect AI
-        this.entity.position.y = this.ball.position.y;
-    }
-    onViewportSizeChanged() {
-        this.entity.position.x = -((Viewport.size.x / 2) - 30);
-    }
-    onTriggerEnter(other) {
-        const otherBody = other.entity.getComponent(RigidBody);
-        if (!otherBody)
-            return;
-        const v = otherBody.velocity;
-        if (v.x < 0) {
-            v.x = -v.x;
-        }
-    }
-}
 export class PlayerPaddleBehavior extends Component {
     constructor() {
         super();
+        this._score = 0;
         this.speed = 5;
     }
     start() {
         this.entity.position.y = 0;
         this.onViewportSizeChanged();
+        const scoreEntity = Entity.find('score');
+        if (scoreEntity) {
+            this._scoreText = scoreEntity.getComponent(HtmlElementTextUI);
+        }
     }
     update() {
         if (Input.mousePosition.y < this.entity.position.y) {
@@ -79,6 +61,10 @@ export class PlayerPaddleBehavior extends Component {
         this.entity.position.x = (Viewport.size.x / 2) - 30;
     }
     onTriggerEnter(other) {
+        this._score++;
+        if (this._scoreText) {
+            this._scoreText.text = this._score.toString();
+        }
         const otherBody = other.entity.getComponent(RigidBody);
         if (!otherBody)
             return;

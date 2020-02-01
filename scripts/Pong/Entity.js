@@ -1,5 +1,6 @@
 import { Vector2 } from "../Drawing/Vector.js";
 import { Component } from "./Component.js";
+import { PhysicsGame } from "./PhysicsGame.js";
 export class RigidBody extends Component {
     constructor(velocity) {
         super();
@@ -39,5 +40,8 @@ export class Entity {
         component.entity = this;
         this._components.push(component);
         return component;
+    }
+    static find(tag) {
+        return PhysicsGame.instance.findEntity(tag);
     }
 }
