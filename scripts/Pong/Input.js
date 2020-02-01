@@ -9,6 +9,7 @@ export class Viewport {
         this.size.x = window.innerWidth;
         this.size.y = window.innerHeight;
         window.addEventListener('resize', Viewport._onResize);
+        window.addEventListener('orientationchange', Viewport._onResize);
         Viewport._isInitialized = true;
     }
     static _onResize(e) {
@@ -29,6 +30,20 @@ export class Viewport {
      */
     static toViewportY(windowY) {
         return -(windowY - (Viewport.size.y / 2));
+    }
+    /**
+     * Converts the viewport x-coordinate to window coordinates.
+     * @param viewportX The viewport x-coordinate.
+     */
+    static toWindowX(viewportX) {
+        return (Viewport.size.x / 2) + viewportX;
+    }
+    /**
+     * Converts the viewport y-coordinate to window coordinates.
+     * @param viewportY The viewport y-coordinate.
+     */
+    static toWindowY(viewportY) {
+        return -(viewportY - (Viewport.size.y / 2));
     }
 }
 Viewport._isInitialized = false;

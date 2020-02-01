@@ -92,9 +92,11 @@ export class PlayerPaddleBehavior extends Component {
 
     update(): void {
         if (Input.mousePosition.y < this.entity.position.y) {
-            this.entity.position.y -= this.speed;
+            const delta = this.entity.position.y - Input.mousePosition.y;
+            this.entity.position.y -= Math.min(this.speed, delta);
         } else if (Input.mousePosition.y > this.entity.position.y) {
-            this.entity.position.y += this.speed;
+            const delta = Input.mousePosition.y - this.entity.position.y;
+            this.entity.position.y += Math.min(this.speed, delta);
         }
     }
 

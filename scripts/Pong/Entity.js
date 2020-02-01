@@ -19,8 +19,8 @@ export class Entity {
         this.position = new Vector2(0, 0);
         this.size = new Vector2(1, 1);
     }
-    sendMessage(name, arg0 = null) {
-        const args = [arg0];
+    sendMessage(name, arg0 = null, arg1 = null) {
+        const args = [arg0, arg1];
         for (let i = 0; i < this._components.length; i++) {
             const component = this._components[i];
             const messageFunction = component[name];
@@ -34,8 +34,8 @@ export class Entity {
             return (component.constructor == type);
         });
     }
-    addComponent(type, arg0 = null) {
-        const component = new type(arg0);
+    addComponent(type, arg0 = null, arg1 = null) {
+        const component = new type(arg0, arg1);
         component.entity = this;
         this._components.push(component);
         return component;
