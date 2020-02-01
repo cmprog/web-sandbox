@@ -1,37 +1,41 @@
-export class BallMovementBehavior {
-    constructor(_entity, _bounds) {
-        this._entity = _entity;
-        this._bounds = _bounds;
+import { RigidBody } from "./Entity.js";
+import { Component } from "./Component.js";
+import { Viewport, Input } from "./Input.js";
+export class BallMovementBehavior extends Component {
+    constructor() {
+        super();
         this.speed = 5;
     }
+    start() {
+        this._body = this.entity.getComponent(RigidBody);
+    }
     update() {
-        const body = this._entity.rigidBody;
-        if (!body)
+        if (!this._body)
             return;
-        const halfBoundHeight = this._bounds.y / 2;
+        const halfBoundHeight = Viewport.size.y / 2;
         // Top bounds
-        if (this._entity.position.y > halfBoundHeight) {
-            this._entity.position.y = halfBoundHeight;
-            body.velocity.y = -1;
+        if (this.entity.position.y > halfBoundHeight) {
+            this.entity.position.y = halfBoundHeight;
+            this._body.velocity.y = -1;
         }
         // Bottom bounds
-        if (this._entity.position.y < -halfBoundHeight) {
-            this._entity.position.y = -halfBoundHeight;
-            body.velocity.y = 1;
+        if (this.entity.position.y < -halfBoundHeight) {
+            this.entity.position.y = -halfBoundHeight;
+            this._body.velocity.y = 1;
         }
-        body.velocity.normalize();
-        body.velocity.scale(this.speed);
+        this._body.velocity.normalize();
+        this._body.velocity.scale(this.speed);
     }
     reflectVertical() {
-        const body = this._entity.rigidBody;
-        if (!body)
+        if (!this._body)
             return;
-        body.velocity.x = -body.velocity.x;
+        this._body.velocity.x = -this._body.velocity.x;
     }
 }
-export class EnemyPaddleBahavior {
-    constructor(entity) {
-        this.entity = entity;
+export class EnemyPaddleBahavior extends Component {
+    start() {
+        this.entity.position.y = 0;
+        this.onViewportSizeChanged();
     }
     update() {
         if (!this.ball)
@@ -39,35 +43,44 @@ export class EnemyPaddleBahavior {
         // perfect AI
         this.entity.position.y = this.ball.position.y;
     }
+    onViewportSizeChanged() {
+        this.entity.position.x = -((Viewport.size.x / 2) - 30);
+    }
     onTriggerEnter(other) {
-        const body = other.entity.rigidBody;
-        if (!body)
+        const otherBody = other.entity.getComponent(RigidBody);
+        if (!otherBody)
             return;
-        const v = body.velocity;
+        const v = otherBody.velocity;
         if (v.x < 0) {
             v.x = -v.x;
         }
     }
 }
-export class PlayerPaddleBehavior {
-    constructor(_entity, _cursorPos) {
-        this._entity = _entity;
-        this._cursorPos = _cursorPos;
+export class PlayerPaddleBehavior extends Component {
+    constructor() {
+        super();
         this.speed = 5;
     }
+    start() {
+        this.entity.position.y = 0;
+        this.onViewportSizeChanged();
+    }
     update() {
-        if (this._cursorPos.y < this._entity.position.y) {
-            this._entity.position.y -= this.speed;
+        if (Input.mousePosition.y < this.entity.position.y) {
+            this.entity.position.y -= this.speed;
         }
-        else if (this._cursorPos.y > this._entity.position.y) {
-            this._entity.position.y += this.speed;
+        else if (Input.mousePosition.y > this.entity.position.y) {
+            this.entity.position.y += this.speed;
         }
     }
+    onViewportSizeChanged() {
+        this.entity.position.x = (Viewport.size.x / 2) - 30;
+    }
     onTriggerEnter(other) {
-        const body = other.entity.rigidBody;
-        if (!body)
+        const otherBody = other.entity.getComponent(RigidBody);
+        if (!otherBody)
             return;
-        const v = body.velocity;
+        const v = otherBody.velocity;
         if (v.x > 0) {
             v.x = -v.x;
         }

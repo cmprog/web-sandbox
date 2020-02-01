@@ -1,52 +1,56 @@
-import { Entity, BoxCollider } from "./Entity.js";
+import { Entity, BoxCollider, RigidBody } from "./Entity.js";
 import { Vector2 } from "../Drawing/Vector.js";
+import { Component } from "./Component.js";
+import { Viewport, Input } from "./Input.js";
 
-export interface Behavior {
-    update(): void;
-}
+export class BallMovementBehavior extends Component {
 
-export class BallMovementBehavior implements Behavior {
+    private _body: RigidBody;
 
-    constructor(private readonly _entity: Entity, private readonly _bounds: Vector2) {
-
+    constructor() {
+        super();
     }
 
     speed: number = 5;
 
+    start(): void {
+        this._body = this.entity.getComponent(RigidBody);
+    }
+
     update(): void {        
 
-        const body = this._entity.rigidBody;
-        if (!body) return;
+        if (!this._body) return;
 
-        const halfBoundHeight = this._bounds.y / 2;
+        const halfBoundHeight = Viewport.size.y / 2;
 
         // Top bounds
-        if (this._entity.position.y > halfBoundHeight ) {
-            this._entity.position.y = halfBoundHeight;
-            body.velocity.y = -1;
+        if (this.entity.position.y > halfBoundHeight ) {
+            this.entity.position.y = halfBoundHeight;
+            this._body.velocity.y = -1;
         }
 
         // Bottom bounds
-        if (this._entity.position.y < -halfBoundHeight) {
-            this._entity.position.y = -halfBoundHeight;
-            body.velocity.y = 1;
+        if (this.entity.position.y < -halfBoundHeight) {
+            this.entity.position.y = -halfBoundHeight;
+            this._body.velocity.y = 1;
         }
 
-        body.velocity.normalize();
-        body.velocity.scale(this.speed);
+        this._body.velocity.normalize();
+        this._body.velocity.scale(this.speed);
     }
 
     reflectVertical(): void {
-        const body = this._entity.rigidBody;
-        if (!body) return;
-        body.velocity.x = -body.velocity.x;
+        if (!this._body) return;
+        this._body.velocity.x = -this._body.velocity.x;
     }
 }
 
-export class EnemyPaddleBahavior implements Behavior {
+export class EnemyPaddleBahavior extends Component {
 
-    constructor(public readonly entity: Entity) {
-        
+    
+    start(): void {
+        this.entity.position.y = 0;
+        this.onViewportSizeChanged();
     }
 
     ball: Entity;
@@ -57,36 +61,53 @@ export class EnemyPaddleBahavior implements Behavior {
         this.entity.position.y = this.ball.position.y;
     }
 
+    onViewportSizeChanged() {        
+        this.entity.position.x = -((Viewport.size.x / 2) - 30);
+    }
+
     onTriggerEnter(other: BoxCollider) {
-        const body = other.entity.rigidBody;
-        if (!body) return;        
-        const v = body.velocity;
+        
+        const otherBody = other.entity.getComponent(RigidBody);
+        if (!otherBody) return;        
+
+        const v = otherBody.velocity;
         if (v.x < 0) {
             v.x = -v.x;
         }
     }
 }
 
-export class PlayerPaddleBehavior implements Behavior {
+export class PlayerPaddleBehavior extends Component {
 
-    constructor(private readonly _entity: Entity, private readonly _cursorPos: Vector2) {
-
+    constructor() {
+        super();
     }
 
     speed: number = 5;
 
+    start(): void {
+        this.entity.position.y = 0;
+        this.onViewportSizeChanged();
+    }
+
     update(): void {
-        if (this._cursorPos.y < this._entity.position.y) {
-            this._entity.position.y -= this.speed;
-        } else if (this._cursorPos.y > this._entity.position.y) {
-            this._entity.position.y += this.speed;
+        if (Input.mousePosition.y < this.entity.position.y) {
+            this.entity.position.y -= this.speed;
+        } else if (Input.mousePosition.y > this.entity.position.y) {
+            this.entity.position.y += this.speed;
         }
     }
 
+    onViewportSizeChanged() {        
+        this.entity.position.x = (Viewport.size.x / 2) - 30;
+    }
+
     onTriggerEnter(other: BoxCollider) {
-        const body = other.entity.rigidBody;
-        if (!body) return;        
-        const v = body.velocity;
+
+        const otherBody = other.entity.getComponent(RigidBody);
+        if (!otherBody) return;        
+
+        const v = otherBody.velocity;
         if (v.x > 0) {
             v.x = -v.x;
         }

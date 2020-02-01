@@ -1,20 +1,20 @@
-import { Entity } from "./Entity.js";
-import { Vector2 } from "../Drawing/Vector.js";
+import { Component } from "./Component.js";
+import { Viewport } from "./Input.js";
 
-export class Renderer {
+export class Renderer extends Component {
 
-    constructor(private readonly _entity: Entity, private readonly _element: HTMLElement) {}
+    constructor(private readonly _element: HTMLElement) {
+        super();
+    }
 
-    bounds: Vector2;
-
-    update(): void {
+    onRenderObject(): void {
         
         const style = this._element.style;
-        const size = this._entity.size;
-        const pos = this._entity.position;
+        const size = this.entity.size;
+        const pos = this.entity.position;
 
-        const boundsHalfWidth = this.bounds.x / 2;
-        const boundsHalfHeight = this.bounds.y / 2;
+        const boundsHalfWidth = Viewport.size.x / 2;
+        const boundsHalfHeight = Viewport.size.y / 2;
 
         // Change coordinate system
         const correctedX = boundsHalfWidth + pos.x;

@@ -1,14 +1,16 @@
-export class Renderer {
-    constructor(_entity, _element) {
-        this._entity = _entity;
+import { Component } from "./Component.js";
+import { Viewport } from "./Input.js";
+export class Renderer extends Component {
+    constructor(_element) {
+        super();
         this._element = _element;
     }
-    update() {
+    onRenderObject() {
         const style = this._element.style;
-        const size = this._entity.size;
-        const pos = this._entity.position;
-        const boundsHalfWidth = this.bounds.x / 2;
-        const boundsHalfHeight = this.bounds.y / 2;
+        const size = this.entity.size;
+        const pos = this.entity.position;
+        const boundsHalfWidth = Viewport.size.x / 2;
+        const boundsHalfHeight = Viewport.size.y / 2;
         // Change coordinate system
         const correctedX = boundsHalfWidth + pos.x;
         const correctedY = -(pos.y - boundsHalfHeight);
