@@ -43,7 +43,15 @@ export class Input {
         document.addEventListener('mousedown', Input._onMouseEvent);
         document.addEventListener('mousemove', Input._onMouseEvent);
         document.addEventListener('mouseup', Input._onMouseEvent);
+        document.addEventListener('touchmove', Input._onTouchEvent);
         Input._isInitialized = true;
+    }
+    static _onTouchEvent(e) {
+        if (e.touches.length) {
+            const primaryTouch = e.touches[0];
+            Input.mousePosition.x = Viewport.toViewportX(primaryTouch.clientX);
+            Input.mousePosition.y = Viewport.toViewportY(primaryTouch.clientY);
+        }
     }
     static _onMouseEvent(e) {
         Input.mousePosition.x = Viewport.toViewportX(e.clientX);

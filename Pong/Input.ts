@@ -60,7 +60,17 @@ export class Input {
         document.addEventListener('mousemove', Input._onMouseEvent);
         document.addEventListener('mouseup', Input._onMouseEvent);
 
+        document.addEventListener('touchmove', Input._onTouchEvent);
+
         Input._isInitialized = true;
+    }
+
+    private static _onTouchEvent(e: TouchEvent) {
+        if (e.touches.length) {
+            const primaryTouch = e.touches[0];
+            Input.mousePosition.x = Viewport.toViewportX(primaryTouch.clientX);
+            Input.mousePosition.y = Viewport.toViewportY(primaryTouch.clientY);
+        }        
     }
 
     private static _onMouseEvent(e: MouseEvent) {        
