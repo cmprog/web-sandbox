@@ -24,10 +24,10 @@ export class PhysicsGame extends Game {
     static removeEntity(entity) {
         PhysicsGame._instance._entitiesPendingRemove.push(entity);
     }
-    findEntity(tag) {
+    findEntityByTag(tag) {
         for (let i = 0; i < this._entities.length; i++) {
             const entity = this._entities[i];
-            if (entity.tag == tag)
+            if (entity.tags.has(tag))
                 return entity;
         }
         return null;
@@ -81,8 +81,8 @@ export class PhysicsGame extends Game {
                 const jBottom = jEntity.position.y - jHalfHeight;
                 if ((iLeft < jRight) && (iRight > jLeft)
                     && (iTop > jBottom) && (iBottom < jTop)) {
-                    iEntity.sendMessage('onTriggerEnter', jCollider);
                     jEntity.sendMessage('onTriggerEnter', iCollider);
+                    iEntity.sendMessage('onTriggerEnter', jCollider);
                 }
             }
         }

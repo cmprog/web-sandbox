@@ -2,35 +2,53 @@ import { Entity, RigidBody } from "./Entity.js";
 import { Component } from "./Component.js";
 import { Viewport, Input } from "./Input.js";
 import { HtmlElementTextUI } from "./Renderer.js";
-export class BallMovementBehavior extends Component {
+export class BallBehavior extends Component {
     constructor() {
-        super();
+        super(...arguments);
         this.speed = 5;
+        this.speedIncrement = 0.3;
     }
     start() {
-        this._body = this.entity.getComponent(RigidBody);
-    }
-    update() {
-        if (!this._body)
+        this._rigidBody = this.entity.getComponent(RigidBody);
+        if (!this._rigidBody)
             return;
-        const halfBoundHeight = Viewport.size.y / 2;
-        // Top bounds
-        if (this.entity.position.y > halfBoundHeight) {
-            this.entity.position.y = halfBoundHeight;
-            this._body.velocity.y = -1;
-        }
-        // Bottom bounds
-        if (this.entity.position.y < -halfBoundHeight) {
-            this.entity.position.y = -halfBoundHeight;
-            this._body.velocity.y = 1;
-        }
-        this._body.velocity.normalize();
-        this._body.velocity.scale(this.speed);
+        this._rigidBody.velocity.normalize();
+        this._rigidBody.velocity.scale(this.speed);
     }
-    reflectVertical() {
-        if (!this._body)
-            return;
-        this._body.velocity.x = -this._body.velocity.x;
+    onTriggerEnter(collider) {
+        if (collider.entity.tags.has('paddle')) {
+            this.speed += this.speedIncrement;
+            if (this._rigidBody) {
+                this._rigidBody.velocity.normalize();
+                this._rigidBody.velocity.scale(this.speed);
+            }
+        }
+    }
+}
+export class WallBehavior extends Component {
+    constructor(_positionScale, _sizeScale, _velocityOffset) {
+        super();
+        this._positionScale = _positionScale;
+        this._sizeScale = _sizeScale;
+        this._velocityOffset = _velocityOffset;
+    }
+    start() {
+        this.onViewportSizeChanged();
+    }
+    onViewportSizeChanged() {
+        this.entity.position.x = Viewport.size.x / 2 * this._positionScale.x;
+        this.entity.position.y = Viewport.size.y * this._positionScale.y;
+        this.entity.size.x = Viewport.size.x * this._sizeScale.x;
+        this.entity.size.y = Viewport.size.y * this._sizeScale.y;
+    }
+    onTriggerEnter(collider) {
+        if (collider.entity.tags.has('ball')) {
+            const rigidBody = collider.entity.getComponent(RigidBody);
+            if (rigidBody) {
+                rigidBody.velocity.x *= this._velocityOffset.x;
+                rigidBody.velocity.y *= this._velocityOffset.y;
+            }
+        }
     }
 }
 export class PlayerPaddleBehavior extends Component {
@@ -61,16 +79,16 @@ export class PlayerPaddleBehavior extends Component {
         this.entity.position.x = (Viewport.size.x / 2) - 30;
     }
     onTriggerEnter(other) {
-        this._score++;
-        if (this._scoreText) {
-            this._scoreText.text = this._score.toString();
-        }
         const otherBody = other.entity.getComponent(RigidBody);
         if (!otherBody)
             return;
         const v = otherBody.velocity;
         if (v.x > 0) {
             v.x = -v.x;
+            this._score++;
+            if (this._scoreText) {
+                this._scoreText.text = this._score.toString();
+            }
         }
     }
 }

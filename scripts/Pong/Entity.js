@@ -14,14 +14,17 @@ export class BoxCollider extends Component {
     }
 }
 export class Entity {
-    constructor(tag) {
-        this.tag = tag;
+    constructor(...tags) {
         this._components = new Array();
+        this.tags = new Set();
         this.position = new Vector2(0, 0);
         this.size = new Vector2(1, 1);
+        for (const tag of tags) {
+            this.tags.add(tag);
+        }
     }
-    sendMessage(name, arg0 = null, arg1 = null) {
-        const args = [arg0, arg1];
+    sendMessage(name, arg0 = null, arg1 = null, arg2 = null) {
+        const args = [arg0, arg1, arg2];
         for (let i = 0; i < this._components.length; i++) {
             const component = this._components[i];
             const messageFunction = component[name];
@@ -35,13 +38,13 @@ export class Entity {
             return (component.constructor == type);
         });
     }
-    addComponent(type, arg0 = null, arg1 = null) {
-        const component = new type(arg0, arg1);
+    addComponent(type, arg0 = null, arg1 = null, arg2 = null) {
+        const component = new type(arg0, arg1, arg2);
         component.entity = this;
         this._components.push(component);
         return component;
     }
     static find(tag) {
-        return PhysicsGame.instance.findEntity(tag);
+        return PhysicsGame.instance.findEntityByTag(tag);
     }
 }

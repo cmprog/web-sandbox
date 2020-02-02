@@ -39,10 +39,10 @@ export class PhysicsGame extends Game implements Updatable {
         PhysicsGame._instance._entitiesPendingRemove.push(entity);
     }
     
-    findEntity(tag: string): Entity {
+    findEntityByTag(tag: string): Entity {
         for (let i = 0; i < this._entities.length; i++) {
             const entity = this._entities[i];
-            if (entity.tag == tag) return entity;
+            if (entity.tags.has(tag)) return entity;
         }
 
         return null;
@@ -111,8 +111,8 @@ export class PhysicsGame extends Game implements Updatable {
                        (iLeft < jRight) && (iRight > jLeft)
                     && (iTop > jBottom) && (iBottom < jTop)) {
 
-                    iEntity.sendMessage('onTriggerEnter', jCollider);
                     jEntity.sendMessage('onTriggerEnter', iCollider);
+                    iEntity.sendMessage('onTriggerEnter', jCollider);
                 }
             }
         }

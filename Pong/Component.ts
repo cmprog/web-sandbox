@@ -14,7 +14,7 @@ export class Component {
         this._entity = v;
     }
 
-    get tag(): string {
-        return this.entity.tag;
+    get tags(): Set<string> {
+        return this.entity.tags;
     }
 }

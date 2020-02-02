@@ -8,7 +8,7 @@ export class Component {
         }
         this._entity = v;
     }
-    get tag() {
-        return this.entity.tag;
+    get tags() {
+        return this.entity.tags;
     }
 }
