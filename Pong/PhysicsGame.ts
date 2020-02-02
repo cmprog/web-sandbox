@@ -9,6 +9,7 @@ export class PhysicsGame extends Game implements Updatable {
     private readonly _entities = new Array<Entity>();
     private readonly _entitiesPendingAdd = new Array<Entity>();
     private readonly _entitiesPendingRemove = new Array<Entity>();
+    private readonly _activeCollistions = new Map<BoxCollider, Set<BoxCollider>>();
 
     private static _instance: PhysicsGame;
 
@@ -84,6 +85,12 @@ export class PhysicsGame extends Game implements Updatable {
             const iEntity = this._entities[i];
             const iCollider = iEntity.getComponent(BoxCollider);
             if (!iCollider) continue;
+
+            let iActiveCollisions = this._activeCollistions.get(iCollider);
+            if (!iActiveCollisions) {
+                iActiveCollisions = new Set<BoxCollider>();
+                this._activeCollistions.set(iCollider, iActiveCollisions);
+            }
             
             const iHalfWidth = iEntity.size.x / 2;
             const iHalfHeight = iEntity.size.y / 2;
@@ -99,6 +106,12 @@ export class PhysicsGame extends Game implements Updatable {
                 const jCollider = jEntity.getComponent(BoxCollider);
                 if (!jCollider) continue;
 
+                let jActiveCollisions = this._activeCollistions.get(jCollider);
+                if (!jActiveCollisions) {
+                    jActiveCollisions = new Set<BoxCollider>();
+                    this._activeCollistions.set(jCollider, jActiveCollisions);
+                }
+
                 const jHalfWidth = jEntity.size.x / 2;
                 const jHalfHeight = jEntity.size.y / 2;
 
@@ -111,8 +124,29 @@ export class PhysicsGame extends Game implements Updatable {
                        (iLeft < jRight) && (iRight > jLeft)
                     && (iTop > jBottom) && (iBottom < jTop)) {
 
-                    jEntity.sendMessage('onTriggerEnter', iCollider);
-                    iEntity.sendMessage('onTriggerEnter', jCollider);
+                    if (!iActiveCollisions.has(jCollider)) {
+                        iEntity.sendMessage('onTriggerEnter', jCollider);
+                        iActiveCollisions.add(jCollider);
+                    } else {                        
+                        iEntity.sendMessage('onTriggerStay', jCollider);
+                    }
+
+                    if (!jActiveCollisions.has(iCollider)) {                        
+                        jEntity.sendMessage('onTriggerEnter', iCollider);
+                        jActiveCollisions.add(iCollider);
+                    } else {
+                        jEntity.sendMessage('onTriggerStay', iCollider);
+                    }
+
+                } else {
+
+                    if (iActiveCollisions.delete(jCollider)) {                        
+                        iEntity.sendMessage('onTriggerExit', jCollider);
+                    }
+
+                    if (jActiveCollisions.delete(iCollider)) {
+                        jEntity.sendMessage('onTriggerExit', iCollider);
+                    }
                 }
             }
         }

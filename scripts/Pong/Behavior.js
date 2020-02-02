@@ -1,11 +1,40 @@
-import { Entity, RigidBody } from "./Entity.js";
+import { RigidBody } from "./Entity.js";
 import { Component } from "./Component.js";
-import { Viewport, Input } from "./Input.js";
-import { HtmlElementTextUI } from "./Renderer.js";
+import { Viewport } from "./Input.js";
+export class ScoringBehavior extends Component {
+    constructor(scoreTextUi) {
+        super();
+        this.score = 0;
+        this.scoreTextUi = scoreTextUi;
+    }
+    onTriggerEnter(collider) {
+        if (collider.tags.has('ball')) {
+            this.score++;
+            if (this.scoreTextUi) {
+                this.scoreTextUi.text = this.score.toString();
+            }
+            collider.entity.sendMessage('reset');
+        }
+    }
+}
+export class ProportionalPosition extends Component {
+    constructor(position) {
+        super();
+        this.position = position;
+    }
+    start() {
+        this.onViewportSizeChanged();
+    }
+    onViewportSizeChanged() {
+        this.entity.position.x = (Viewport.size.x / 2) * this.position.x;
+        this.entity.position.y = (Viewport.size.y / 2) * this.position.y;
+    }
+}
 export class BallBehavior extends Component {
     constructor() {
         super(...arguments);
-        this.speed = 5;
+        this.baseSpeed = 5;
+        this.currentSpeed = 5;
         this.speedIncrement = 0.3;
     }
     start() {
@@ -13,14 +42,25 @@ export class BallBehavior extends Component {
         if (!this._rigidBody)
             return;
         this._rigidBody.velocity.normalize();
-        this._rigidBody.velocity.scale(this.speed);
+        this._rigidBody.velocity.scale(this.currentSpeed);
+    }
+    reset() {
+        this.currentSpeed = this.baseSpeed;
+        this.entity.position.x = 0;
+        this.entity.position.y = 0;
+        if (this._rigidBody) {
+            this._rigidBody.velocity.x = Math.random();
+            this._rigidBody.velocity.y = Math.random();
+            this._rigidBody.velocity.normalize();
+            this._rigidBody.velocity.scale(this.currentSpeed);
+        }
     }
     onTriggerEnter(collider) {
         if (collider.entity.tags.has('paddle')) {
-            this.speed += this.speedIncrement;
+            this.currentSpeed += this.speedIncrement;
             if (this._rigidBody) {
                 this._rigidBody.velocity.normalize();
-                this._rigidBody.velocity.scale(this.speed);
+                this._rigidBody.velocity.scale(this.currentSpeed);
             }
         }
     }
@@ -47,47 +87,6 @@ export class WallBehavior extends Component {
             if (rigidBody) {
                 rigidBody.velocity.x *= this._velocityOffset.x;
                 rigidBody.velocity.y *= this._velocityOffset.y;
-            }
-        }
-    }
-}
-export class PlayerPaddleBehavior extends Component {
-    constructor() {
-        super();
-        this._score = 0;
-        this.speed = 5;
-    }
-    start() {
-        this.entity.position.y = 0;
-        this.onViewportSizeChanged();
-        const scoreEntity = Entity.find('score');
-        if (scoreEntity) {
-            this._scoreText = scoreEntity.getComponent(HtmlElementTextUI);
-        }
-    }
-    update() {
-        if (Input.mousePosition.y < this.entity.position.y) {
-            const delta = this.entity.position.y - Input.mousePosition.y;
-            this.entity.position.y -= Math.min(this.speed, delta);
-        }
-        else if (Input.mousePosition.y > this.entity.position.y) {
-            const delta = Input.mousePosition.y - this.entity.position.y;
-            this.entity.position.y += Math.min(this.speed, delta);
-        }
-    }
-    onViewportSizeChanged() {
-        this.entity.position.x = (Viewport.size.x / 2) - 30;
-    }
-    onTriggerEnter(other) {
-        const otherBody = other.entity.getComponent(RigidBody);
-        if (!otherBody)
-            return;
-        const v = otherBody.velocity;
-        if (v.x > 0) {
-            v.x = -v.x;
-            this._score++;
-            if (this._scoreText) {
-                this._scoreText.text = this._score.toString();
             }
         }
     }

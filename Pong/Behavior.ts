@@ -1,14 +1,55 @@
-import { Entity, BoxCollider, RigidBody } from "./Entity.js";
+import { BoxCollider, RigidBody } from "./Entity.js";
 import { Component } from "./Component.js";
-import { Viewport, Input } from "./Input.js";
-import { HtmlElementTextUI } from "./Renderer.js";
+import { Viewport } from "./Input.js";
 import { Vector2 } from "../Drawing/Vector.js";
+import { HtmlElementTextUI } from "./Renderer.js";
 
-export class BallBehavior extends Component{
+export class ScoringBehavior extends Component {
+
+    constructor(scoreTextUi: HtmlElementTextUI) {
+        super();
+
+        this.scoreTextUi = scoreTextUi;
+    }
+
+    score = 0;
+    scoreTextUi: HtmlElementTextUI;
+
+    onTriggerEnter(collider: BoxCollider): void {
+        if (collider.tags.has('ball')) {
+
+            this.score++;
+            if (this.scoreTextUi) {
+                this.scoreTextUi.text = this.score.toString();
+            }
+
+            collider.entity.sendMessage('reset');
+        }
+    }
+}
+
+export class ProportionalPosition extends Component {
+
+    constructor(public position: Vector2) {
+        super();
+    }
+
+    start() {
+        this.onViewportSizeChanged();
+    }
+
+    onViewportSizeChanged() {
+        this.entity.position.x = (Viewport.size.x / 2) * this.position.x;
+        this.entity.position.y = (Viewport.size.y / 2) * this.position.y;
+    }
+}
+
+export class BallBehavior extends Component {
 
     private _rigidBody: RigidBody;
 
-    speed = 5;
+    baseSpeed = 5;
+    currentSpeed = 5;
     speedIncrement = 0.3;
 
     start() {
@@ -16,15 +57,29 @@ export class BallBehavior extends Component{
         if (!this._rigidBody) return;
 
         this._rigidBody.velocity.normalize();
-        this._rigidBody.velocity.scale(this.speed);
+        this._rigidBody.velocity.scale(this.currentSpeed);
+    }
+
+    reset() {
+
+        this.currentSpeed = this.baseSpeed;
+        this.entity.position.x = 0;
+        this.entity.position.y = 0;
+
+        if (this._rigidBody) {
+            this._rigidBody.velocity.x = Math.random();
+            this._rigidBody.velocity.y = Math.random();
+            this._rigidBody.velocity.normalize();
+            this._rigidBody.velocity.scale(this.currentSpeed);
+        }
     }
 
     onTriggerEnter(collider: BoxCollider): void {
         if (collider.entity.tags.has('paddle')) {
-            this.speed += this.speedIncrement;
+            this.currentSpeed += this.speedIncrement;
             if (this._rigidBody) {
                 this._rigidBody.velocity.normalize();
-                this._rigidBody.velocity.scale(this.speed);
+                this._rigidBody.velocity.scale(this.currentSpeed);
             }
         }
     }
@@ -62,57 +117,4 @@ export class WallBehavior extends Component {
             }
         }
     }
-}
-
-export class PlayerPaddleBehavior extends Component {
-
-    private _score: number = 0;
-    private _scoreText: HtmlElementTextUI;    
-
-    constructor() {
-        super();
-    }
-
-    speed: number = 5;
-
-    start(): void {
-        this.entity.position.y = 0;
-        this.onViewportSizeChanged();
-
-        const scoreEntity = Entity.find('score');
-        if (scoreEntity) {
-            this._scoreText = scoreEntity.getComponent(HtmlElementTextUI);
-        }
-    }
-
-    update(): void {
-        if (Input.mousePosition.y < this.entity.position.y) {
-            const delta = this.entity.position.y - Input.mousePosition.y;
-            this.entity.position.y -= Math.min(this.speed, delta);
-        } else if (Input.mousePosition.y > this.entity.position.y) {
-            const delta = Input.mousePosition.y - this.entity.position.y;
-            this.entity.position.y += Math.min(this.speed, delta);
-        }
-    }
-
-    onViewportSizeChanged() {        
-        this.entity.position.x = (Viewport.size.x / 2) - 30;
-    }
-
-    onTriggerEnter(other: BoxCollider) {
-
-        const otherBody = other.entity.getComponent(RigidBody);
-        if (!otherBody) return;        
-
-        const v = otherBody.velocity;
-        if (v.x > 0) {
-            v.x = -v.x;
-                        
-            this._score++;
-            if (this._scoreText) {
-                this._scoreText.text = this._score.toString();
-            }
-        }
-    }
-
 }

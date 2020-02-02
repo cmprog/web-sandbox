@@ -7,6 +7,7 @@ export class PhysicsGame extends Game {
         this._entities = new Array();
         this._entitiesPendingAdd = new Array();
         this._entitiesPendingRemove = new Array();
+        this._activeCollistions = new Map();
         if (PhysicsGame._instance) {
             throw new Error('Cannot have multiple PhysicsGame objects.');
         }
@@ -62,6 +63,11 @@ export class PhysicsGame extends Game {
             const iCollider = iEntity.getComponent(BoxCollider);
             if (!iCollider)
                 continue;
+            let iActiveCollisions = this._activeCollistions.get(iCollider);
+            if (!iActiveCollisions) {
+                iActiveCollisions = new Set();
+                this._activeCollistions.set(iCollider, iActiveCollisions);
+            }
             const iHalfWidth = iEntity.size.x / 2;
             const iHalfHeight = iEntity.size.y / 2;
             const iLeft = iEntity.position.x - iHalfWidth;
@@ -73,6 +79,11 @@ export class PhysicsGame extends Game {
                 const jCollider = jEntity.getComponent(BoxCollider);
                 if (!jCollider)
                     continue;
+                let jActiveCollisions = this._activeCollistions.get(jCollider);
+                if (!jActiveCollisions) {
+                    jActiveCollisions = new Set();
+                    this._activeCollistions.set(jCollider, jActiveCollisions);
+                }
                 const jHalfWidth = jEntity.size.x / 2;
                 const jHalfHeight = jEntity.size.y / 2;
                 const jLeft = jEntity.position.x - jHalfWidth;
@@ -81,8 +92,28 @@ export class PhysicsGame extends Game {
                 const jBottom = jEntity.position.y - jHalfHeight;
                 if ((iLeft < jRight) && (iRight > jLeft)
                     && (iTop > jBottom) && (iBottom < jTop)) {
-                    jEntity.sendMessage('onTriggerEnter', iCollider);
-                    iEntity.sendMessage('onTriggerEnter', jCollider);
+                    if (!iActiveCollisions.has(jCollider)) {
+                        iEntity.sendMessage('onTriggerEnter', jCollider);
+                        iActiveCollisions.add(jCollider);
+                    }
+                    else {
+                        iEntity.sendMessage('onTriggerStay', jCollider);
+                    }
+                    if (!jActiveCollisions.has(iCollider)) {
+                        jEntity.sendMessage('onTriggerEnter', iCollider);
+                        jActiveCollisions.add(iCollider);
+                    }
+                    else {
+                        jEntity.sendMessage('onTriggerStay', iCollider);
+                    }
+                }
+                else {
+                    if (iActiveCollisions.delete(jCollider)) {
+                        iEntity.sendMessage('onTriggerExit', jCollider);
+                    }
+                    if (jActiveCollisions.delete(iCollider)) {
+                        jEntity.sendMessage('onTriggerExit', iCollider);
+                    }
                 }
             }
         }

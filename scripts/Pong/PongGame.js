@@ -1,17 +1,26 @@
 import { Vector2 } from '../Drawing/Vector.js';
 import { Entity, RigidBody, BoxCollider } from "./Entity.js";
-import { PlayerPaddleBehavior, WallBehavior, BallBehavior } from "./Behavior.js";
+import { WallBehavior, BallBehavior, ProportionalPosition, ScoringBehavior } from "./Behavior.js";
 import { HtmlElementBoxRenderer, HtmlElementTextUI } from "./Renderer.js";
 import { PhysicsGame } from "./PhysicsGame.js";
-import { EnemyPaddleBahavior } from './EnemyPaddleBahavior.js';
+import { AiPaddleBehavior } from './EnemyPaddleBahavior.js';
+import { PlayerPaddleBehavior } from './PlayerPaddleBehavior.js';
+import { PaddleBehavior } from './PaddleBehavior.js';
 export class PongGame extends PhysicsGame {
     constructor() {
         super();
-        var scoreEntity = new Entity('score');
-        scoreEntity.size = new Vector2(200, 50);
-        scoreEntity.addComponent(HtmlElementTextUI, '0', 'white');
-        scoreEntity.addComponent(HtmlElementBoxRenderer);
-        PhysicsGame.addEntity(scoreEntity);
+        const playerScore = new Entity();
+        playerScore.size = new Vector2(20, 20);
+        playerScore.addComponent(ProportionalPosition, new Vector2(0.15, 0.8));
+        playerScore.addComponent(HtmlElementTextUI, '0');
+        playerScore.addComponent(HtmlElementBoxRenderer, 'white');
+        PhysicsGame.addEntity(playerScore);
+        const enemyScore = new Entity();
+        enemyScore.size = new Vector2(20, 20);
+        enemyScore.addComponent(ProportionalPosition, new Vector2(-0.15, 0.8));
+        enemyScore.addComponent(HtmlElementTextUI, '0');
+        enemyScore.addComponent(HtmlElementBoxRenderer, 'white');
+        PhysicsGame.addEntity(enemyScore);
         this._entityBall = new Entity('ball');
         this._entityBall.size = new Vector2(10, 10);
         this._entityBall.addComponent(BallBehavior);
@@ -24,12 +33,13 @@ export class PongGame extends PhysicsGame {
         this._entityEnemy.size = new Vector2(10, 100);
         this._entityEnemy.addComponent(HtmlElementBoxRenderer, 'red');
         this._entityEnemy.addComponent(BoxCollider);
-        const enemyBehavior = this._entityEnemy.addComponent(EnemyPaddleBahavior);
-        enemyBehavior.ball = this._entityBall;
+        this._entityEnemy.addComponent(PaddleBehavior, -1);
+        this._entityEnemy.addComponent(AiPaddleBehavior);
         PhysicsGame.addEntity(this._entityEnemy);
         this._entityPlayer = new Entity('paddle', 'player');
         this._entityPlayer.size = new Vector2(10, 100);
         this._entityPlayer.addComponent(HtmlElementBoxRenderer, 'blue');
+        this._entityPlayer.addComponent(PaddleBehavior, 1);
         this._entityPlayer.addComponent(PlayerPaddleBehavior);
         this._entityPlayer.addComponent(BoxCollider);
         PhysicsGame.addEntity(this._entityPlayer);
@@ -41,5 +51,17 @@ export class PongGame extends PhysicsGame {
         wallBottom.addComponent(WallBehavior, new Vector2(0, -1), new Vector2(1, 1), new Vector2(1, -1));
         wallBottom.addComponent(BoxCollider);
         PhysicsGame.addEntity(wallBottom);
+        const wallRight = new Entity('wall', 'wall-vertical', 'wall-right');
+        wallRight.addComponent(ScoringBehavior, enemyScore.getComponent(HtmlElementTextUI));
+        wallRight.addComponent(WallBehavior, new Vector2(1.1, 0), new Vector2(0.1, 1), new Vector2(-1, 1));
+        wallRight.addComponent(HtmlElementBoxRenderer, 'gray');
+        wallRight.addComponent(BoxCollider);
+        PhysicsGame.addEntity(wallRight);
+        const wallLeft = new Entity('wall', 'wall-vertical', 'wall-left');
+        wallLeft.addComponent(ScoringBehavior, playerScore.getComponent(HtmlElementTextUI));
+        wallLeft.addComponent(WallBehavior, new Vector2(-1.1, 0), new Vector2(0.1, 1), new Vector2(-1, 1));
+        wallLeft.addComponent(HtmlElementBoxRenderer, 'gray');
+        wallLeft.addComponent(BoxCollider);
+        PhysicsGame.addEntity(wallLeft);
     }
 }

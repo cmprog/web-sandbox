@@ -1,34 +1,26 @@
 import { Component } from "./Component.js";
 import { Entity, BoxCollider, RigidBody } from "./Entity.js";
-import { Viewport } from "./Input.js";
 
-export class EnemyPaddleBahavior extends Component {
+export class AiPaddleBehavior extends Component {
 
     start(): void {
-        this.entity.position.y = 0;
-        this.onViewportSizeChanged();
+        this.ball = Entity.find('ball');
     }
+
+    speed = 5;
 
     ball: Entity;
     
     update(): void {
+
         if (!this.ball) return;
-        // perfect AI
-        this.entity.position.y = this.ball.position.y;
-    }
 
-    onViewportSizeChanged() {        
-        this.entity.position.x = -((Viewport.size.x / 2) - 30);
-    }
-
-    onTriggerEnter(other: BoxCollider) {
-        
-        const otherBody = other.entity.getComponent(RigidBody);
-        if (!otherBody) return;        
-
-        const v = otherBody.velocity;
-        if (v.x < 0) {
-            v.x = -v.x;
+        if (this.ball.position.y < this.entity.position.y) {
+            const delta = this.entity.position.y - this.ball.position.y;
+            this.entity.position.y -= Math.min(this.speed, delta);
+        } else if (this.ball.position.y > this.entity.position.y) {
+            const delta = this.ball.position.y - this.entity.position.y;
+            this.entity.position.y += Math.min(this.speed, delta);
         }
     }
 }
