@@ -23,7 +23,7 @@ export class PongGame extends PhysicsGame {
         PhysicsGame.addEntity(enemyScore);
         this._entityBall = new Entity('ball');
         this._entityBall.size = new Vector2(10, 10);
-        this._entityBall.addComponent(BallBehavior);
+        let ballBehavior = this._entityBall.addComponent(BallBehavior);
         let renderer = this._entityBall.addComponent(HtmlElementBoxRenderer, 'green');
         renderer.radius = 5;
         this._entityBall.addComponent(RigidBody, Vector2.createNormalized(1, 1));

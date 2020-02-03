@@ -5,6 +5,7 @@ export class PaddleBehavior extends Component {
     constructor(positionDirection) {
         super();
         this.positionDirection = positionDirection;
+        this.verticalInfuence = 10.0;
     }
     start() {
         this.entity.position.y = 0;
@@ -20,8 +21,14 @@ export class PaddleBehavior extends Component {
         if (!otherBody)
             return;
         const v = otherBody.velocity;
-        if (Math.sign(v.x) == Math.sign(this.positionDirection)) {
-            v.x = -v.x;
-        }
+        const speed = v.magnitude;
+        // flip the direction of the ball
+        v.x = -v.x;
+        // then adjust the y component based on the relative y-delta
+        const deltaY = other.entity.position.y - this.entity.position.y;
+        const deltaYPercent = deltaY / (this.entity.size.y / 2);
+        v.y += this.verticalInfuence * deltaYPercent;
+        v.normalize();
+        v.scale(speed);
     }
 }

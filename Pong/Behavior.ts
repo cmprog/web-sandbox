@@ -55,32 +55,34 @@ export class BallBehavior extends Component {
     start() {
         this._rigidBody = this.entity.getComponent(RigidBody);
         if (!this._rigidBody) return;
+        this.reset();
+    }
 
-        this._rigidBody.velocity.normalize();
-        this._rigidBody.velocity.scale(this.currentSpeed);
+    private _changeSpeed(value: number) {
+        this.currentSpeed = value;
+
+        if (this._rigidBody) {
+            this._rigidBody.velocity.normalize();
+            this._rigidBody.velocity.scale(this.currentSpeed);            
+        }
     }
 
     reset() {
 
-        this.currentSpeed = this.baseSpeed;
         this.entity.position.x = 0;
         this.entity.position.y = 0;
 
         if (this._rigidBody) {
-            this._rigidBody.velocity.x = Math.random();
+            this._rigidBody.velocity.x = 0.5 + (Math.random() * 2);// favor the x-axis
             this._rigidBody.velocity.y = Math.random();
-            this._rigidBody.velocity.normalize();
-            this._rigidBody.velocity.scale(this.currentSpeed);
         }
+
+        this._changeSpeed(this.baseSpeed);
     }
 
     onTriggerEnter(collider: BoxCollider): void {
         if (collider.entity.tags.has('paddle')) {
-            this.currentSpeed += this.speedIncrement;
-            if (this._rigidBody) {
-                this._rigidBody.velocity.normalize();
-                this._rigidBody.velocity.scale(this.currentSpeed);
-            }
+            this._changeSpeed(this.currentSpeed + this.speedIncrement);
         }
     }
 }
